@@ -16,12 +16,15 @@ def port_scan(port):
     try:
         s.connect((targethost, port))
         with print_lock:
-            print('open')
+            try: 
+                protocol = socket.getservbyport(port)
+                print(f'{Fore.GREEN}{port} Open {protocol}')
+            except:
+                print(f'{Fore.GREEN}{port} Open Unknown')
         s.close()
-        print('here')
     except:
-        print('closed')
-
+        with print_lock:
+            print(f'{Fore.RED}{port} Closed')
 
 
 def threader():
@@ -34,6 +37,7 @@ def threader():
 
 
 def scan_ports(ports, threads):
+    global q
     for t in range(threads):
         t = threading.Thread(target=threader, daemon=True)
         t.start()
@@ -53,9 +57,11 @@ targethost, port_range, threads = args.targethost, args.ports, args.threads
 
 port_begin, port_end = port_range.split('-')
 port_begin, port_end = int(port_begin), int(port_end)
-ports = [p for p in range(port_begin, port_end)]
+ports = [p for p in range(port_begin, port_end+1)]
 print(ports[0], ports[-1])
 
+
+print("Port Status Protocol")
 start = time.time()
 scan_ports(ports, threads)
 
